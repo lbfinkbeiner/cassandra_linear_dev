@@ -27,8 +27,7 @@ COSMO_PARS_INDICES = [
     'w0',
     'wa',
     'z'
-]
-
+]   
 
 def labels_to_mapping(labels):
     """
@@ -68,6 +67,31 @@ def denormalize_row(lhs_row, priors, mapping):
     xmin = np.min(tailored_priors, axis=1)
     return lhs_row * xrange + xmin
     
+
+def generate_header(lhs, mapping, priors, save_label):
+    """ ESSENTIAL function for fill_hypercube series of functions.
+    Explains the priors used, and explains which columns map to which
+    cosmological parameters.
+    """
+    header = "HEADER FOR " + save_label + "\n------------\n\n"
+    
+    r0 = lhs[0] # so that we can describe dimensionality of the samples
+    for i in range(len(lhs_row)):
+        par_label = COSMO_PARS_INDICES[mapping[i]]
+        header += "Column #" + str(i) + "of the LHS describes the parameter: " \
+            + par_label + ".\n"
+        
+        these_priors = priors[mapping[i]]
+        header += "its priors are [" +  these_priors[0] + ", " + \
+            these_priors[1] + "].\n\n"
+    
+    with open(save_label + ".csv", "w") as file:
+        file.write(header)
+    
+    print("The requested header is as follows:\n\n", header)
+    
+    # Also, we should print out this header so that
+    #    we can immediately check our work.
 
 def build_cosmology(lhs_row, mapping):
     # Use Aletheia model 0 as a base
