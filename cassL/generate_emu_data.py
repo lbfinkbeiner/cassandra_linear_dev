@@ -318,9 +318,13 @@ def interpolate_nosigma12(input_cosmology, standard_k_axis):
 
 
 def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
-                                write_period=None,
-                                save_label="sigma12_backup_i{}",
+                                write_period=None, cell_range=None,
+                                save_label="sigma12",
                                 crash_when_unsolvable=False):
+    """
+    cell_range is kind of useless here, since filling a hypercube with sigma12
+        takes a very small amount of time.
+    """    
     def eval_func(cosmology):
         # De-nesting
         return ci.evaluate_sigma12(cosmology, [12.], [1.])[0][0]
@@ -346,9 +350,13 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         print(i, "complete")
         unwritten_cells += 1
 
+        # Here we use much simpler logic compared to the analogous section of
+        # the other two fill_hypercube functions, because the user should very
+        # rarely be using cell_range, and writing the whole set of results
+        # should not be burdensome.
         if write_period is not None and unwritten_cells >= write_period:
-            # We add one because the current cell is also unwritten
-            np.save(save_label.format(i), samples)
+            file_suffix = "_backup_i{}"
+            np.save(save_label + file_suffix.format(i), samples)
             unwritten_cells = 0
 
     return samples
@@ -422,7 +430,7 @@ def fill_hypercube_with_Pk(lhs, standard_k_axis, mapping, priors,
 
 
 def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
-                               write_period=None, save_label="unlabeled",
+                               write_period=None, save_label="sigmaR",
                                crash_when_unsolvable=False):
     """
     @lhs: this is a list of tuples with which @eval_func is to be evaluated.
