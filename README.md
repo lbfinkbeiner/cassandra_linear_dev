@@ -14,3 +14,14 @@ Currently, the repo is not in a good state for three reasons:
 3. As an example of a big change mentioned in point 2: when I had to stop working on the code and switch to patent studies, I was still in the middle of switching the way that the emulator builder reads in parameter values in order to generate training power spectra with CAMB. The point of this exercise is to greatly simplify debugging and future emulator creation, because a developer will be able to look directly at headers in the training data to see what cosmology they describe.
 
 As of 22.03.2025, I think I may yet have enough time to address points 1 and 3, but 2 could be a significant undertaking depending on the nature of the problem.
+
+## Using this code: 
+
+(The code is of course capable of much more than the following, but the following examples should get one started if one has no idea what to do with the code. After that, one can simply look around in the code to see what else there is to do.)
+
+# To generate a single power spectrum
+
+1. create a cosmology dictionary. A great way to start is to simply call camb_interface.default_cosmology(), which gives the Aletheia model 0 cosmology, and the user can modify it according to the desired parameter values.
+
+2. Call camb_interface.evaluate_cosmology, passing in the cosmology dictionary. The user gets the power spectrum as well as various other information described in the evaluate_cosmology docstring. Alternatively, the user can call camb_interface.get_CAMB_interpolator, which is a spiritually analogous function that Andrea Pezzotta probably would have preferred. However, in the latter case the output is an interpolator rather than a power spectrum. This is a regular CAMB interpolator and should be accessed as one, i.e. interpolator.P(z, k).
+
