@@ -523,7 +523,6 @@ def specify_neutrino_mass(cosmology, omnuh2_in, nnu_massive_in=1):
 
     full_cosmology["omnuh2"] = omnuh2_in
     full_cosmology["nnu_massive"] = nnu_massive_in
-
     return full_cosmology
 
 def verify_cosmology(cosmology):

@@ -49,6 +49,11 @@ def labels_to_mapping(labels):
     the prior values. All of the prior files must abide by the order shown in
     COSMO_PARS_INDICES. 
     
+    The priors indices always correspond to the same parameters, but the
+    lhs_row may not contain all such parameters. That's why this mapping is 
+    important. The keys (i.e. the indices, since this is a list) are are lhs row 
+    indices while the values are prior indices.
+    
     Parameters
     ----------
     labels: list
@@ -78,12 +83,16 @@ def denormalize_row(lhs_row, priors, mapping):
     """
     Parameters
     ----------
-    priors: array of priors as output by ui.prior_file_to_array
+    lhs_row: list
+        A list of unitless values between 0 and 1 taken from a Latin hypercube
+        of input values for a data set of power spectra. Each value is supposed
+        to become a value for a cosmological parameter defining a cosmology
+        from which CAMB computes a power spectrum.
+    priors: list
+        array of prior bounds, see ui.prior_file_to_array
     mapping: array mapping lhs_row indices to priors indices.
-        The priors indices always correspond to the same parameters, but the
-        lhs_row may not contain all such parameters. That's why this mapping
-        is important. The keys are are lhs row indices, the values are prior
-        indices.
+        See the docstring for the above fn labels_to_mapping for more details
+        concerning the mapping system.
     """
     tailored_priors = []
     for i in range(len(lhs_row)):

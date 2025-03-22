@@ -30,7 +30,20 @@ def print_cosmology(cosmology):
 
 def prior_file_to_array(prior_name):
     """
-    !
+    Parameters
+    ----------
+    prior_name: string
+        the file_name (minus the directory and minus the ending) corresponding
+        to the set of priors to be read into main memory.
+    
+    Returns
+    -------
+    param_ranges: np.ndarray
+        width: 2
+        height: # cosmological params
+        a series of arrays in the order given in the list
+        ged.COSMO_PARS_INDICES. Each array specifies the minimum and maximum
+        value that a particular cosmological parameter may take.
     """
     param_ranges = None
 
