@@ -1,5 +1,5 @@
 # cassandra_linear_dev
- Development tools for the emulation suite Cassandra Linear
+ Development tools for the emulation suite Cassandra Linear. To get started, install this repo in the typical Pythonic fashion (e.g. navigate to directory and run `pip install -e .`).
 
 See also the repository https://github.com/lbfinkbeiner/Cassandra.linear
 That repository is used for the user-facing code, which is supposed to be all that anyone will ultimately need in order to work with emulator files (.cle).
