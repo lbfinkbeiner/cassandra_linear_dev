@@ -24,6 +24,8 @@ from cassL import utils
 
 h_DEFAULT = ci.default_cosmology()["h"]
 
+# The order of this list must match the order used in priors files, which are
+# located in cassandra_linear_dev/priors/
 COSMO_PARS_INDICES = [
     'ombh2',
     'omch2',
@@ -42,9 +44,23 @@ def labels_to_mapping(labels):
     """
     Return a mapping array (for use with denormalize_row and build_cosmology)
     based on the order of the parameters in the provided array.
+
+    The point is to provide a set of indices which allow immediate accessing of
+    the prior values. All of the prior files must abide by the order shown in
+    COSMO_PARS_INDICES. 
     
-    @labels: an array of labels in the format exemplified by
-    COSMO_PARS_INDICES.
+    Parameters
+    ----------
+    labels: list
+        labels in the format exemplified by COSMO_PARS_INDICES.
+        
+    Returns
+    -------
+    mapping: list
+        This is what the rest of the script refers to as a "mapping": basically,
+        we turn labels into a list of equal size (unless it contains duplicates)
+        but where the cosmological variable names are replaced by the index
+        associated with that variable name in the COSMO_PARS_INDICES list.
     """
     mapping = []
     for label in labels:
@@ -60,6 +76,8 @@ def labels_to_mapping(labels):
 
 def denormalize_row(lhs_row, priors, mapping):
     """
+    Parameters
+    ----------
     priors: array of priors as output by ui.prior_file_to_array
     mapping: array mapping lhs_row indices to priors indices.
         The priors indices always correspond to the same parameters, but the
@@ -128,12 +146,12 @@ def build_cosmology(lhs_row, mapping):
     cosmology = ci.default_cosmology(z_comparisons=False)
     
     for i in range(len(lhs_row)):
-        # Two special cases: omega_K and omega_nu
+        # Two parameters require special handling: curvature and neutrinos
         par_label = COSMO_PARS_INDICES[mapping[i]]
-        if par_label == 'omnuh2':
+        if par_label == 'omnuh2': # special because we have a helper fn here
             cosmology = ci.specify_neutrino_mass(cosmology, lhs_row[i], 1)
-        elif par_label == 'omkh2':
-            # h should have already been specified by now
+        elif par_label == 'omkh2': # special because camb doesn't like omkh2
+            # h ought to have already been specified by now.
             cosmology['OmK'] = lhs_row[i] / cosmology['h'] ** 2
         else:
             cosmology[COSMO_PARS_INDICES[mapping[i]]] = lhs_row[i]
@@ -141,10 +159,16 @@ def build_cosmology(lhs_row, mapping):
     return cosmology
 
 def broadcast_unsolvable(input_cosmology, list_sigma12=None):
+    """
+    Warn the user and write Nones to the data set if we cannot obtain a valid
+    power spectrum for a given cosmology.
+    """
     print("\nThis cell cannot be solved with a nonnegative redshift.")
     print("This is the failed cosmology:\n")
     ui.print_cosmology(input_cosmology)
     
+    # Something about this calculation seems bogus to me since the values given
+    # are sometimes absurd. Don't take this value so seriously.
     if list_sigma12 is not None:
         print("\nThe closest feasible sigma12 value would yield an error of:",
             utils.percent_error(input_cosmology["sigma12"],

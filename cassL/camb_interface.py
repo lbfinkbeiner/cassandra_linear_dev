@@ -87,7 +87,22 @@ def default_cosmology(z_comparisons=True):
     the user is free to modify the result without having to worry about making
     a copy.
 
-    Returns: dictionary (a copy of the default cosmology)
+    Parameters
+    ----------
+    z_comparisons: bool
+        if this is True, we create the cosmology dictionary from the
+        bulkier cosm Pandas table, which includes redshift-values at which
+        different Aletheia models are supposed to overlap according to evolution
+        mapping. If this is False, the user gets a much sleeker cosmology dict.
+        
+        TO-DO: the default value is True but the user will almost certainly
+            want to set this to False. I should fix the legacy code to set
+            z_comparisons=True where necessary so that this default can change.
+
+    Returns
+    -------
+    (dict)
+        a copy of the default cosmology
     """
     base = cosm.iloc[0] if z_comparisons else compact_cosm.iloc[0]
     return specify_neutrino_mass(base, 0)
@@ -493,17 +508,13 @@ def input_dark_energy(pars, w0, wa):
         pars.set_dark_energy(w=w0, wa=wa, dark_energy_model='ppf')
 
 
-def specify_neutrino_mass(cosmology, omnuh2_in, nnu_massive_in=None):
+def specify_neutrino_mass(cosmology, omnuh2_in, nnu_massive_in=1):
     """
     Helper function for input_cosmology.
     This returns a modified copy (and therefore does not mutate the original)
     of the input dictionary object, which corresponds to a cosmology with
     massive neutrinos.
     """
-    # Default behavior: if no nnu_massive_in specified, take it to be 1 in the
-    # massive-neutrino case, 0 otherwise
-    if nnu_massive_in is None:
-        nnu_massive_in = 1
     if omnuh2_in == 0 and nnu_massive_in == 0:
         warnings.warn("CAMB crashes with nnu_massive == 0, even if " + \
             "omnuh2 is zero. We're overriding and setting nnu_massive = 1...")
@@ -511,24 +522,6 @@ def specify_neutrino_mass(cosmology, omnuh2_in, nnu_massive_in=None):
     full_cosmology = cp.deepcopy(cosmology)
 
     full_cosmology["omnuh2"] = omnuh2_in
-
-    '''This is a horrible workaround, and I would like to get rid of it
-    ASAP. It destroys dependence on TCMB and
-    neutrino_hierarchy, possibly more. But CAMB does not accept omnuh2 as
-    an input, so I have to reverse-engineer it somehow.
-
-    Also, should we replace default_nnu with something else in the
-    following expression? Even if we're changing N_massive to 1,
-    N_total_eff = 3.046 nonetheless, right?'''
-    # full_cosmology["mnu"] = omnuh2_to_mnu(full_cosmology["omnuh2"])
-
-    # print("The mnu value", mnu_in, "corresponds to the omnuh2 value",
-    #    omnuh2_in)
-    # full_cosmology["omch2"] -= omnuh2_in
-    ''' The removal of the above line is a significant difference, but it
-        allows us to transition more naturally into the emulator sample
-        generating code.'''
-
     full_cosmology["nnu_massive"] = nnu_massive_in
 
     return full_cosmology
