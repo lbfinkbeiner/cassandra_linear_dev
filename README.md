@@ -15,11 +15,11 @@ Currently, the repo is not in a good state for three reasons:
 
 As of 22.03.2025, I think I may yet have enough time to address points 1 and 3, but 2 could be a significant undertaking depending on the nature of the problem.
 
-## Using this code: 
+# Using this code: 
 
 (The code is of course capable of much more than the following, but the following examples should get one started if one has no idea what to do with the code. After that, one can simply look around in the code to see what else there is to do.)
 
-# To generate a single power spectrum
+## To generate a single power spectrum
 
 1. create a cosmology dictionary. A great way to start is to simply call camb_interface.default_cosmology(), which gives the Aletheia model 0 cosmology, and the user can modify it according to the desired parameter values.
 
