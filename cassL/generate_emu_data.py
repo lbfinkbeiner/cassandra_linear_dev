@@ -1,3 +1,12 @@
+"""
+This script is abbreviated in comments and the important statement as ged.
+
+It provides an organized framework within which the user can make repeated calls
+to the camb_interface script. The repeated calls are used to build up
+collections of CAMB output spectra to use as training data sets for the
+emulator.
+"""
+
 import sys, platform, os
 import traceback
 import copy as cp
@@ -69,9 +78,12 @@ def denormalize_row(lhs_row, priors, mapping):
     
 
 def generate_header(lhs, mapping, priors, save_label):
-    """ ESSENTIAL function for fill_hypercube series of functions.
-    Explains the priors used, and explains which columns map to which
-    cosmological parameters.
+    """ Essential function for fill_hypercube series of functions.
+    Writes a header to a file specified by save_label.
+    
+    The header explains the priors used, and explains which columns map to which
+    cosmological parameters. This essentially provides self-documenting data
+    sets.
     """
     header = "HEADER FOR " + save_label + "\n------------\n\n"
     
@@ -88,12 +100,30 @@ def generate_header(lhs, mapping, priors, save_label):
     with open(save_label + ".csv", "w") as file:
         file.write(header)
     
+    # I am currently in the middle of developing the header system as a
+    # replacement for the awful mapping system. Therefore, we print out the
+    # header here to facilitate debugging.
     print("The requested header is as follows:\n\n", header)
     
-    # Also, we should print out this header so that
-    #    we can immediately check our work.
 
 def build_cosmology(lhs_row, mapping):
+    """
+    Generation of the training/testing data sets for the emulator works by
+    iterating through rows of a Latin hypercube matrix and converting these
+    values into values for cosmological parameters.
+    
+    This function creates a cosmology dictionary from the values in a row
+    (lhs_row) taken from the Latin hypercube of input parameters. We do this
+    because the cosmology dictionary attaches raw floating-point values to
+    specific cosmological variables. The camb_interface script is written to
+    call CAMB to obtain power spectra using these cosmology dictionaries.
+    
+    For a detailed explanation of the cosmology dictionary, see the text file
+    "standards.txt" in the same directory as this script.
+    
+    TO-DO: explain how to use the mapping argument.
+    """
+    
     # Use Aletheia model 0 as a base
     cosmology = ci.default_cosmology(z_comparisons=False)
     

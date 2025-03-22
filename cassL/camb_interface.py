@@ -18,7 +18,7 @@ import warnings
 from cassL import utils
 
 # This isn't inside a function because it's annoying to edit global
-# variables...
+# variables in Python...
 try:
     # Keep in mind that 'cosmologies.dat' is NOT the same file as the original
     # 'cosmology_Aletheia.dat' that Ariel provided. In order to facilitate the
@@ -68,6 +68,9 @@ OMNUH2_FLOATS = np.array([0.0006356, 0.002148659574468, 0.006356, 0.01])
 # access the power spectra save files provided to us by Ariel.
 OMNUH2_STRS = np.array(["0.0006", "0.002", "0.006", "0.01"])
 
+# This array is used for the purpose of mapping redshift values to the indices
+# of snapshots in the Aletheia simulations. The array exists purely for testing
+# our results and debugging.
 ALETHEIA_SNAPS = np.array([0, 1, 2, 3, 4])
 
 #! These really shouldn't be constants, but parameters...
