@@ -81,18 +81,24 @@ def labels_to_mapping(labels):
 
 def denormalize_row(lhs_row, priors, mapping):
     """
+    Uses priors to convert the normalized lhs_row values into values that
+    directly describe cosmological parameters.
+    
     Parameters
     ----------
     lhs_row: list
         A list of unitless values between 0 and 1 taken from a Latin hypercube
-        of input values for a data set of power spectra. Each value is supposed
-        to become a value for a cosmological parameter defining a cosmology
-        from which CAMB computes a power spectrum.
-    priors: list
-        array of prior bounds, see ui.prior_file_to_array
-    mapping: array mapping lhs_row indices to priors indices.
-        See the docstring for the above fn labels_to_mapping for more details
-        concerning the mapping system.
+        of input values for a data set of power spectra.
+    priors: two-dimensional np.ndarray
+        set of prior bounds, see ui.prior_file_to_array
+    mapping: list.
+        See the fn labels_to_mapping for more details concerning this object.
+        
+    Returns
+    -------
+    (list)
+        A scaled and offset version of lhs_row which directly describes values
+        of cosmological parameters.
     """
     tailored_priors = []
     for i in range(len(lhs_row)):
@@ -105,7 +111,8 @@ def denormalize_row(lhs_row, priors, mapping):
     
 
 def generate_header(lhs, mapping, priors, save_label):
-    """ Essential function for fill_hypercube series of functions.
+    """
+    Essential function for fill_hypercube series of functions.
     Writes a header to a file specified by save_label.
     
     The header explains the priors used, and explains which columns map to which
@@ -149,6 +156,21 @@ def build_cosmology(lhs_row, mapping):
     "standards.txt" in the same directory as this script.
     
     TO-DO: explain how to use the mapping argument.
+    
+    Parameters
+    ----------
+    lhs_row: list
+        A list of unitless values between 0 and 1 taken from a Latin hypercube
+        of input values for a data set of power spectra.
+    mapping: list.
+        See the fn labels_to_mapping for more details concerning this object.    
+    
+    Returns
+    -------
+    (dict)
+        A cosmology dictionary where values of cosmological parameters are
+        determined by the normalized values in lhs_row and mapped to specific
+        cosmological parameters using mapping.
     """
     
     # Use Aletheia model 0 as a base
@@ -169,8 +191,20 @@ def build_cosmology(lhs_row, mapping):
 
 def broadcast_unsolvable(input_cosmology, list_sigma12=None):
     """
-    Warn the user and write Nones to the data set if we cannot obtain a valid
-    power spectrum for a given cosmology.
+    Warns the user and returns formatted Nones to be written to the output data
+    set.
+    
+    Helper fn for the fill_hypercube fns, called when a valid power spectrum
+    cannot be obtained for a given cosmology.
+    
+    Parameters
+    ----------
+    input_cosmology: dict
+        This is only used to provide debugging output. This fn does not actually
+        test whether input_cosmology indeed cannot be used to generate a power
+        spectrum.
+    list_sigma12:
+        TO-DO
     """
     print("\nThis cell cannot be solved with a nonnegative redshift.")
     print("This is the failed cosmology:\n")

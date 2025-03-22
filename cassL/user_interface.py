@@ -7,6 +7,11 @@ import os
 
 data_prefix = os.path.dirname(os.path.abspath(__file__)) + "/"
 
+"""
+If I recall correctly, the following four constants exist to confirm the A_s
+prior values stored in the priors text files. I should delete these once I've
+removed direct references in the code.
+"""
 # In keeping with the format of values typically quoted in the literature for
 # the scalar mode amplitude (see, for example, Spurio Mancini et al, 2021 ),
 # we here define our prior ranges with the use of exponentiation.
@@ -18,8 +23,6 @@ A_MEGA_MAX = np.exp(5) / 10 ** 10
 A_CLASSIC_MIN = np.exp(2.35) / 10 ** 10
 A_CLASSIC_MAX = np.exp(3.91) / 10 ** 10
 
-# These values help with the following function.
-# However, neither of these belongs here, we should find a different home.
 disregard_keys = ["OmB", "OmC", "OmM", "z(4)", "z(3)", "z(2)", "z(1)", "z(0)",
     "Lbox", "sigma8", "Name", "nnu_massive", "EOmDE"]
 
@@ -30,6 +33,21 @@ def print_cosmology(cosmology):
 
 def prior_file_to_array(prior_name):
     """
+    Load a text file into main memory, where the text file describes a set of
+    priors for different cosmological parameters. The contexts of the text file
+    are processed into a particular format which is no longer traceable,
+    because the values are divorced from their labels.
+        -> TO-DO This represents a significant flaw in the code and makes
+        debugging a pain. I regret making prior_file_to_dict legacy code, maybe 
+        someday I will revive it.
+    
+    In particular, the output of this fn is used in ged to convert unitless
+    Latin hypercube values into human-readable values for cosmological
+    parameters.
+    
+    The format of a priors text file is prescribed, consult the examples given
+    in cassandra_linear_dev/priors/.
+    
     Parameters
     ----------
     prior_name: string
