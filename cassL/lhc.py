@@ -15,7 +15,7 @@ def batch(n_params, n_samples=5000, batch_size=50, comparator=np.greater):
     """
     Parameters
     ----------
-    @comparator
+    comparator: fn accepting two arguments
         To see if hypercube A is better than hypercube B, we use the if
         statement
         if comparator(A's minimum separation, B's minimum separation)

@@ -172,14 +172,9 @@ class Emulator_Trainer:
 
 
         def predict(self, X):
-            # Instead of solving the x formatting complaints by blindly
-            # re-nesting x, let's try to get to the bottom of *why* the
-            # formatting is so messed up in the first place.
-
-            # I think the reason we need to nest is because the prediction
-            # expects a collection of x, not just a single x point!
             if not isinstance(X[0], np.ndarray):
-                X = np.array([X]) # nesting necessary to evaluate single config
+                X = np.array([X]) # Nesting is necessary to evaluate a single
+                # cosmological configuration.
 
             if not is_normalized_X(X):
                 raise ValueError("The input parameters are not correctly " + \
@@ -204,6 +199,33 @@ class Emulator_Trainer:
 
             The Y's should be log-normalized when emulating power spectra, but
             not when emulating values for sigma12.
+        
+        Parameters
+        ----------
+        args[0]: String
+            used to label the emulator, e.g. automatically used to name emulator
+            files saved to disk.
+        args[1]: np.ndarray
+            X training set, i.e., each row describes a cosmology with values
+            for different cosmological parameters
+        args[2]: np.ndarray
+            Y training set, i.e., each row is an array of P(k) values
+            resulting from CAMB's evaluation of the cosmology defined by the
+            corresponding row of X. The k values corresponding to each column
+            will have been specified by the user when calling the code in
+            generate_emu_data. The array of k values is recommended to be stored
+            somewhere in a file.
+        args[3]: np.ndarray
+            the set of priors used during generation of the training data
+            and over which the emulator is intended to provide valid results.
+            args[3] should be in the format given in
+            user_interface.prior_file_to_array.
+        args[4]: bool
+            whether the Y values ought to be normalized. The default is True and
+            the user is not recommended to change this.
+            TO-DO: I don't remember if this bool is also used to determine
+            whether the Y values should be *log*-normalized...
+            
         """
         constructor_complaint = "To instantiate an emulator trainer, the " + \
             "following parameters are required: name, X training data, Y " + \
