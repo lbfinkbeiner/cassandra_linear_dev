@@ -467,8 +467,9 @@ def make_neutrinos_fancy(pars, nnu_massive):
     These settings were originally added very early in the development of this
     package to achieve close agreement with a Fortran code written by Ariel G.
     Sánchez. Specifically, the Sánchez code produced power spectra from CAMB for
-    the Aletheia cosmologies which were. These power spectra were used to test
-    this package. Due to some bizarre behavior of the CAMB-provided Python
+    the Aletheia cosmologies. These power spectra were used to test the accuracy
+    of the implementation of this package.
+    Due to some bizarre behavior of the CAMB-provided Python
     wrapper, these settings turned out to be a mistake for reasons that are
     still unclear to me. In practice, this script gives correct results when
     the neutrinos are not fancy. However, from a theoretical perspective, the
