@@ -27,6 +27,17 @@ disregard_keys = ["OmB", "OmC", "OmM", "z(4)", "z(3)", "z(2)", "z(1)", "z(0)",
     "Lbox", "sigma8", "Name", "nnu_massive", "EOmDE"]
 
 def print_cosmology(cosmology):
+    """
+    A useful helper fn for debugging. Simply printing out the cosmology
+    dictionaries proved cumbersome since a significant amount of unwanted
+    information ended up cluttering up the console.
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
     for key in cosmology.keys():
         if key not in disregard_keys:
             print(key, cosmology[key])
@@ -82,7 +93,10 @@ def prior_file_to_array(prior_name):
                     param_ranges = np.append(param_ranges, bounds, axis=0)
 
     return param_ranges
-
+    
+### Warning: all of the code below this line is either legacy code or related to
+### half-baked projects. It's highly unlikely I'll ever get around to finishing
+### what I've started here, but one can hope. TO-DO
 
 def prior_file_to_dict(prior_name="COMET"):
     """
@@ -148,6 +162,9 @@ def check_existing_files(scenario_name):
     
 
 def get_scenario(scenario_name):
+    """
+    TO-DO: The scenario system would have been great. If only I had more time...
+    """
     scenario = {}
     file_handle = "scenarios/" + scenario_name + ".txt"
     

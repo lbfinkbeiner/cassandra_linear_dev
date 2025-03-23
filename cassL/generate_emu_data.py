@@ -238,6 +238,12 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
     """
     Returns the power spectrum in Mpc units and the actual sigma12_tilde value
         to which it corresponds.
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """
     num_k_points = len(standard_k_axis)
     
@@ -334,6 +340,12 @@ def interpolate_cell(input_cosmology, standard_k_axis):
     * Should we regenerate the MEMNeC interpolator at the end (i.e., with just
         one redshift value rather than 150), to get better resolution? Or is it
         fine to re-use?
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """
     # This allows us to roughly find the z corresponding to the sigma12 that we
     # want.
@@ -408,6 +420,12 @@ def interpolate_nosigma12(input_cosmology, standard_k_axis):
     * Should we regenerate the MEMNeC interpolator at the end (i.e., with just
         one redshift value rather than 150), to get better resolution? Or is it
         fine to re-use?
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """
     # This allows us to roughly find the z corresponding to the sigma12 that we
     # want.
@@ -436,6 +454,12 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
     """
     cell_range is kind of useless here, since filling a hypercube with sigma12
         takes a very small amount of time.
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """    
     def eval_func(cosmology):
         # De-nesting
@@ -485,6 +509,12 @@ def fill_hypercube_with_Pk(lhs, standard_k_axis, mapping, priors,
         to be evaluated. By default, it is None, which means that the entire
         lhs will be evaluated. This parameter can be used to pick up from where
         previous runs left off, and to run this method in saveable chunks.
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """
     if cell_range is None:
         cell_range = range(len(lhs))
@@ -551,6 +581,12 @@ def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
         to be evaluated. By default, it is None, which means that the entire
         lhs will be evaluated. This parameter can be used to pick up from where
         previous runs left off, and to run this method in saveable chunks.
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
     """
     if cell_range is None:
         cell_range = range(len(lhs))
