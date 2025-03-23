@@ -59,4 +59,4 @@ This is the slowest step and the various auto-saving parameters of the fn should
 
 Instead, the user should define a cosmology using an array of values for cosmological parameters using the exact same format as the rows in the X matrix of the originally provided training data in step 1, e.g. a length-6 array.
 
-The user should then normalize the values in the array by calling convert_to_normalized_params, which is a fn of the p_emu field of the Emulator_Trainer object. Lastly, the user should call predict, another fn of the p_emu field, and pass in the normalized cosmology array.  
+The user should then normalize the values in the array by calling convert_to_normalized_params, which is a fn of the p_emu field of the Emulator_Trainer object. Lastly, the user should call predict, another fn of the p_emu field, and pass in the normalized cosmology array.  The output of this fn is automatically de-transformed. Therefore, in a perfect world, the output should be approximately equal to the power spectrum that CAMB would arrive at for the given cosmology.
