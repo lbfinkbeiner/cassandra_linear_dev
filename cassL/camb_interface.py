@@ -173,7 +173,7 @@ def balance_neutrinos_with_CDM(cosmology, new_omnuh2):
 
     Returns
     -------
-    (dict)
+    dict
         A dictionary of settings for cosmological parameters. The precise
         format is specified in the file "standards.txt".
     """
@@ -312,7 +312,7 @@ A_min = np.exp(1.61) / 10 ** 10
 A_max = np.exp(5) / 10 ** 10
 
 def get_random_cosmology(omega_nu):
-    r"""
+    """
     !
     Return a cosmological configuration based on model0 but uniformly
     randomized in:
@@ -459,10 +459,21 @@ def boltzmann_battery(omnuh2_floats, skips_omega=[0, 2], skips_model=[8],
 
 def make_neutrinos_fancy(pars, nnu_massive):
     """
-    This is a kzps helper function which enables the infamous fancy neutrino.
-    In practice, this only overrides the effective number of massless neutrinos
-    by a small amount, which nonetheless leads to irreconcilable discrepancies
-    compared to observations.
+    This is an evaluate_cosmology helper fn which enables the infamous fancy
+    neutrino. In practice, this only overrides the effective number of
+    massless neutrinos by a small amount, which nonetheless leads to
+    irreconcilable discrepancies compared to observations.
+    
+    These settings were originally added very early in the development of this
+    package to achieve close agreement with a Fortran code written by Ariel G.
+    Sánchez. Specifically, the Sánchez code produced power spectra from CAMB for
+    the Aletheia cosmologies which were. These power spectra were used to test
+    this package. Due to some bizarre behavior of the CAMB-provided Python
+    wrapper, these settings turned out to be a mistake for reasons that are
+    still unclear to me. In practice, this script gives correct results when
+    the neutrinos are not fancy. However, from a theoretical perspective, the
+    results probably cannot be fully trusted until the strange handling of
+    neutrinos can be explained.
     """
     pars.num_nu_massless = 3.046 - nnu_massive
     pars.nu_mass_eigenstates = nnu_massive
@@ -476,8 +487,8 @@ def make_neutrinos_fancy(pars, nnu_massive):
 
 def apply_universal_output_settings(pars):
     """
-    This is a kzps helper function which modifies the desired accuracy of CAMB
-    and which disables certain outputs in which we are not interested.
+    This is a evaluate_cosmology helper fn which modifies the desired accuracy
+    of CAMB and which disables certain outputs in which we are not interested.
     """
 
     # The following lines are desperation settings

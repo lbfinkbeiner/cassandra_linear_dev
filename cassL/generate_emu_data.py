@@ -206,11 +206,15 @@ def build_cosmology(lhs_row, mapping):
 
 def broadcast_unsolvable(input_cosmology, list_sigma12=None):
     """
-    Warns the user and returns formatted Nones to be written to the output data
-    set.
-    
     Helper fn for the fill_hypercube fns, called when a valid power spectrum
-    cannot be obtained for a given cosmology.
+    cannot be obtained for a given cosmology. Warns the user and returns
+    formatted Nones to be written to the output data set.
+    
+    The formatting of the Nones is important to ensuring that the fill_hypercube
+    fns do not crash. Furthermore, by catching CAMB failures and noting them in
+    the generated data sets, I've been able to automate removal of failed data 
+    points later in the pipeline with the fn
+    train_emu.eliminate_unusable_entries.
     
     Parameters
     ----------
@@ -226,7 +230,7 @@ def broadcast_unsolvable(input_cosmology, list_sigma12=None):
     ui.print_cosmology(input_cosmology)
     
     # Something about this calculation seems bogus to me since the values given
-    # are sometimes absurd. Don't take this value so seriously.
+    # are frequently absurd. Don't take this value so seriously. TO-DO
     if list_sigma12 is not None:
         print("\nThe closest feasible sigma12 value would yield an error of:",
             utils.percent_error(input_cosmology["sigma12"],
@@ -237,10 +241,13 @@ def broadcast_unsolvable(input_cosmology, list_sigma12=None):
 def direct_eval_cell(input_cosmology, standard_k_axis):
     """
     Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-        to which it corresponds.
+    to which it corresponds. Recall that sigma12_tilde is defined as the sigma12
+    value of input_cosmology's MEMNeC.
         
     Parameters
     ----------
+    input_cosmology: dict
+        Cosmology dictionary in the format 
     
     Returns
     -------
