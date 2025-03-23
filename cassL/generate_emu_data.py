@@ -5,6 +5,8 @@ It provides an organized framework within which the user can make repeated calls
 to the camb_interface script. The repeated calls are used to build up
 collections of CAMB output spectra to use as training data sets for the
 emulator.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
 """
 
 import sys, platform, os
@@ -96,7 +98,7 @@ def denormalize_row(lhs_row, priors, mapping):
         
     Returns
     -------
-    (list)
+    list
         A scaled and offset version of lhs_row which directly describes values
         of cosmological parameters.
     """
@@ -110,19 +112,34 @@ def denormalize_row(lhs_row, priors, mapping):
     return lhs_row * xrange + xmin
     
 
-def generate_header(lhs, mapping, priors, save_label):
+def generate_header(priors, mapping, save_label):
     """
-    Essential function for fill_hypercube series of functions.
-    Writes a header to a file specified by save_label.
+    Essential function for fill_hypercube series of functions. Writes a header
+    to a file specified by save_label. The header is intended to include all
+    information necessary for the reproduction of the data set.
     
     The header explains the priors used, and explains which columns map to which
     cosmological parameters. This essentially provides self-documenting data
     sets.
+    
+    -> TO-DO: this fn hasn't been tested yet.
+    
+    Parameters
+    ----------
+    priors: two-dimensional np.ndarray
+        set of prior bounds, see ui.prior_file_to_array
+    mapping: list.
+        See the fn labels_to_mapping for more details concerning this object.
+    save_label: file name associated with the set of power spectra to be 
+        generated, for example using fill_hypercube_with_Pk.    
+        
+    Returns
+    -------
+    None
     """
     header = "HEADER FOR " + save_label + "\n------------\n\n"
     
-    r0 = lhs[0] # so that we can describe dimensionality of the samples
-    for i in range(len(lhs_row)):
+    for i in range(len(mapping)):
         par_label = COSMO_PARS_INDICES[mapping[i]]
         header += "Column #" + str(i) + "of the LHS describes the parameter: " \
             + par_label + ".\n"
@@ -155,8 +172,6 @@ def build_cosmology(lhs_row, mapping):
     For a detailed explanation of the cosmology dictionary, see the text file
     "standards.txt" in the same directory as this script.
     
-    TO-DO: explain how to use the mapping argument.
-    
     Parameters
     ----------
     lhs_row: list
@@ -167,7 +182,7 @@ def build_cosmology(lhs_row, mapping):
     
     Returns
     -------
-    (dict)
+    dict
         A cosmology dictionary where values of cosmological parameters are
         determined by the normalized values in lhs_row and mapped to specific
         cosmological parameters using mapping.
@@ -204,7 +219,7 @@ def broadcast_unsolvable(input_cosmology, list_sigma12=None):
         test whether input_cosmology indeed cannot be used to generate a power
         spectrum.
     list_sigma12:
-        TO-DO
+        TO-DO: how do I articulate what this is?
     """
     print("\nThis cell cannot be solved with a nonnegative redshift.")
     print("This is the failed cosmology:\n")

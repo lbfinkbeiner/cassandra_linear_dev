@@ -225,7 +225,6 @@ class Emulator_Trainer:
             the user is not recommended to change this.
             TO-DO: I don't remember if this bool is also used to determine
             whether the Y values should be *log*-normalized...
-            
         """
         constructor_complaint = "To instantiate an emulator trainer, the " + \
             "following parameters are required: name, X training data, Y " + \
@@ -402,6 +401,8 @@ class Emulator_Trainer:
         elif metric == "train_sqerr":
             return self.train_sq_errors
     
+        # TO-DO: seems like a bad idea to not have the "unc" prefix here, seems
+        # like it would confuse people trying to use the code.
         # Training error for uncertainty emulator
         if metric == "deltas":
             return self.deltas
