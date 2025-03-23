@@ -240,9 +240,18 @@ def broadcast_unsolvable(input_cosmology, list_sigma12=None):
 
 def direct_eval_cell(input_cosmology, standard_k_axis):
     """
-    Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-    to which it corresponds. Recall that sigma12_tilde is defined as the sigma12
-    value of input_cosmology's MEMNeC.
+    Helper fn for fill_hypercube_with_Pk: generates a single power spectrum
+    from a single cosmology dictionary. Modifies h and z values so that the
+    power spectrum exhibits a desired sigma12 value as specified in the
+    cosmology dictionary.
+    
+    This script offers two approaches to evaluating individual cosmologies;
+    they're intended to give the same results. Why did I write both? To aid in
+    debugging; the two approaches differ in what parts of the CAMB code are 
+    ultimately accessed.
+    
+    This fn first generates a power spectrum and then builds an interpolator
+    from it.
         
     Parameters
     ----------
@@ -254,16 +263,13 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
     standard_k_axis: list or one-dimensional np.ndarray
         The k values at which the power spectrum should be evaluated. I don't
         believe there's a way to feed these directly into CAMB; one has to use
-        interpolation. This script offers two approaches which are intended to
-        give the same results. This one first generates a power spectrum and
-        then builds an interpolator from it. The other directly uses a CAMB 
-        interpolator.
+        interpolation.
     
     Returns
     -------
     p: np.ndarray
-        Power spectrum computed by CAMB for the cosmology defined by
-        input_cosmology. The length of this array is equal to that of
+        Power spectrum in Mpc units computed by CAMB for the cosmology defined
+        by input_cosmology. The length of this array is equal to that of
         standard_k_axis.
         
     np.ndarray
@@ -367,26 +373,62 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
 
 def interpolate_cell(input_cosmology, standard_k_axis):
     """
-    Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-        to which it corresponds.
-
-    I concede that the function looks like a mess right now, with debug
-    statements littered all over the place.
-
-    This is a demo function until we figure out how to apply the interpolation
-    approach to the generation of emu data. Once we have that, we can figure
-    out how to re-combine this function with the previous one.
+    Helper fn for fill_hypercube_with_Pk: generates a single power spectrum
+    from a single cosmology dictionary. Modifies h and z values so that the
+    power spectrum exhibits a desired sigma12 value as specified in the
+    cosmology dictionary.
+    
+    This script offers two approaches to evaluating individual cosmologies;
+    they're intended to give the same results. Why did I write both? To aid in
+    debugging; the two approaches differ in what parts of the CAMB code are 
+    ultimately accessed.
+    
+    This fn directly uses a CAMB interpolator. 
+    
+    TO-DO: this fn is similar to `direct_eval_cell` in many regards, and should
+    be combined with it; a fn parameter should allow the user to choose between
+    the two functionalities currently afforded by their separation.
 
     Possible issues:
     * Should we regenerate the MEMNeC interpolator at the end (i.e., with just
         one redshift value rather than 150), to get better resolution? Or is it
         fine to re-use?
-        
+                
     Parameters
     ----------
+    input_cosmology: dict
+        Cosmology dictionary in the format used in the camb_interface script.
+        For example, see the `balance_neutrinos_with_CDM docstring`.
+        -> TO-DO: this docstring isn't a very centralized area for such an
+        essential piece of information.
+    standard_k_axis: list or one-dimensional np.ndarray
+        The k values at which the power spectrum should be evaluated. I don't
+        believe there's a way to feed these directly into CAMB; one has to use
+        interpolation.
     
     Returns
     -------
+    p: np.ndarray
+        Power spectrum computed by CAMB for the cosmology defined by
+        input_cosmology. The length of this array is equal to that of
+        standard_k_axis.
+        
+    np.ndarray
+        A triplet of values useful for debugging:
+        actual_sigma12: int
+            The value of h and z are modified in order to get a power spectrum
+            with a desired value of sigma12. If the desired value diverges
+            significantly from `actual_sigma12`, something has gone wrong.
+        float
+            The value of h at which the cosmology given by input_cosmology has
+            been evaluated to arrive at `p`.
+        float
+            The value of z at which the cosmology given by input_cosmology has
+            been evaluated to arrive at `p`.
+            
+        The user is advised to write these triplets to a file in order to
+        investigate any issues with the accuracy of the power spectra generated
+        via this fn.
     """
     # This allows us to roughly find the z corresponding to the sigma12 that we
     # want.
