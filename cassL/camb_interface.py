@@ -162,6 +162,11 @@ def balance_neutrinos_with_CDM(cosmology, new_omnuh2):
         mind that the cosmology will be assumed to completely lack massive
         neutrinos in the event that both of the keys 'mnu' and 'omnuh2' are
         missing.
+        -> TO-DO: this docstring isn't a very centralized area for such an
+        essential piece of information. We should put the information somewhere
+        else and have each fn dealing with cosomology dictionaries refer to the
+        centralized location.
+
 
     new_omnuh2: float
         The new desired value for the physical density in neutrinos. The

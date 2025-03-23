@@ -214,7 +214,7 @@ def broadcast_unsolvable(input_cosmology, list_sigma12=None):
     fns do not crash. Furthermore, by catching CAMB failures and noting them in
     the generated data sets, I've been able to automate removal of failed data 
     points later in the pipeline with the fn
-    train_emu.eliminate_unusable_entries.
+    `train_emu.eliminate_unusable_entries`.
     
     Parameters
     ----------
@@ -247,10 +247,41 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
     Parameters
     ----------
     input_cosmology: dict
-        Cosmology dictionary in the format 
+        Cosmology dictionary in the format used in the camb_interface script.
+        For example, see the `balance_neutrinos_with_CDM docstring`.
+        -> TO-DO: this docstring isn't a very centralized area for such an
+        essential piece of information.
+    standard_k_axis: list or one-dimensional np.ndarray
+        The k values at which the power spectrum should be evaluated. I don't
+        believe there's a way to feed these directly into CAMB; one has to use
+        interpolation. This script offers two approaches which are intended to
+        give the same results. This one first generates a power spectrum and
+        then builds an interpolator from it. The other directly uses a CAMB 
+        interpolator.
     
     Returns
     -------
+    p: np.ndarray
+        Power spectrum computed by CAMB for the cosmology defined by
+        input_cosmology. The length of this array is equal to that of
+        standard_k_axis.
+        
+    np.ndarray
+        A triplet of values useful for debugging:
+        actual_sigma12: int
+            The value of h and z are modified in order to get a power spectrum
+            with a desired value of sigma12. If the desired value diverges
+            significantly from `actual_sigma12`, something has gone wrong.
+        float
+            The value of h at which the cosmology given by input_cosmology has
+            been evaluated to arrive at `p`.
+        float
+            The value of z at which the cosmology given by input_cosmology has
+            been evaluated to arrive at `p`.
+            
+        The user is advised to write these triplets to a file in order to
+        investigate any issues with the accuracy of the power spectra generated
+        via this fn.
     """
     num_k_points = len(standard_k_axis)
     
@@ -282,9 +313,9 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
 
         try:
             # In the vast majority of cases, the following line will generate
-            # the ValueError caught in the except clause. However, we have
-            # encountered one case where interpolating the power spectrum
-            # generated an error. We're including that code here, too, because
+            # the ValueError caught in the except clause. However, on rare
+            # occasions a ValueError is generated when obtaining the
+            # interpolated P(k). Regardless of which line raises the Exception,
             # the solution appears to be the same: just decrease h.
             z_best = interpolator(input_cosmology["sigma12"])
             
@@ -300,7 +331,10 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
             break
             
         except ValueError:
-            # we need to start playing with h.
+            # The try block almost certainly failed because there is no
+            # solution. That is to say, varying redshift alone, and avoiding
+            # all negative values of redshift, the desired value of sigma12
+            # cannot be reached. Therefore, we need to start playing with h.
             if input_cosmology['h'] > 0.1:
                 input_cosmology['h'] -= 0.1
             elif input_cosmology['h'] >= 0.02:
