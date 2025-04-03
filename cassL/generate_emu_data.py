@@ -371,7 +371,7 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
 
 def interpolate_cell(input_cosmology, standard_k_axis):
     """
-    Helper fn for fill_hypercube_with_Pk: generates a single power spectrum
+    Helper fn for `fill_hypercube_with_Pk`: generates a single power spectrum
     from a single cosmology dictionary. Modifies h and z values so that the
     power spectrum exhibits a desired sigma12 value as specified in the
     cosmology dictionary.
@@ -486,14 +486,42 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
                                 save_label="sigma12",
                                 crash_when_unsolvable=False):
     """
-    cell_range is kind of useless here, since filling a hypercube with sigma12
-        takes a very small amount of time.
+    Given a Latin hypercube of cosmologies, return an array of sigma12 values.
+    This fn is used to build the sigma12 emulator.
+    
+    This fn is probably obsolete in light of the newer, generalized fn 
+    `fill_hypercube_with_sigmaR`.
         
     Parameters
     ----------
+    lhs: two-dimensional np.ndarray of uniform shape
+        Normalized values corresponding to cosmological parameters used to
+        define cosmologies to be evaluated. The width of this matrix corresponds
+        to the number of cosmological parameters used to define each cosmology.
+        The height of this matrix corresponds to the number of different
+        cosmologies defined.
+    mapping:
+        used to qualify `lhs`
+    priors: ditto
+        used to qualify `lhs`
+    samples:
+    write_period:
+    cell_range:
+        TO-DO: explain what this controls
+    
+        This parameter makes sense for fill_hypercube_with_Pk, which is a much
+        more computationally intensive fn. It is of comparatively little use
+        here, since a complete batch of results can be generated in but few
+        minutes.
+    save_label:
+    crash_when_unsolvable:
     
     Returns
     -------
+    samples: one-dimensional np.ndarray
+        Contains the calculated sigma12 values for each cosmology jointly
+        specified by `lhs`, `mapping`, and `priors`. The length of `samples`
+        therefore corresponds to the height of `lhs`.
     """    
     def eval_func(cosmology):
         # De-nesting
@@ -530,6 +558,61 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
             unwritten_cells = 0
 
     return samples
+    
+    
+def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
+                               write_period=None, save_label="sigmaR",
+                               crash_when_unsolvable=False):
+    """
+    @lhs: this is a list of tuples with which @eval_func is to be evaluated.
+
+    @cell_range: a range object specifying the indices of lhs which still need
+        to be evaluated. By default, it is None, which means that the entire
+        lhs will be evaluated. This parameter can be used to pick up from where
+        previous runs left off, and to run this method in saveable chunks.
+        
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    """
+    if cell_range is None:
+        cell_range = range(len(lhs))
+
+    samples = np.zeros((len(lhs), len(R_axis)))
+
+    unwritten_cells = 0
+    for i in cell_range:
+        this_denormalized_row = denormalize_row(lhs[i], priors, mapping)
+        this_cosmology = build_cosmology(this_denormalized_row, mapping)
+
+        try:
+            samples[i] = ci.evaluate_sigmaR(this_cosmology, R_axis, [1.])[0]
+
+            if samples[i] is None and crash_when_unsolvable:
+                raise ValueError("Cell unsolvable.")
+        except camb.CAMBError:
+            print("This cell is unsolvable. Since this function requires " + \
+                  "no rescaling, your priors are probably extreme.")
+            if crash_when_unsolvable:
+                raise ValueError("Cell unsolvable.")
+
+        print(i, "complete")
+        unwritten_cells += 1
+        if write_period is not None and unwritten_cells >= write_period:
+            # We add one because the current cell is also unwritten
+            save_start = i - unwritten_cells + 1
+            save_end = i + 1
+
+            file_suffix = "_backup_i{}_through_{}_{}.npy"
+            file_suffix = file_suffix.format(save_start, i, save_label)
+
+            np.save("sigmaR" + file_suffix, samples[save_start:save_end])
+
+            unwritten_cells = 0
+
+    return samples    
 
 
 def fill_hypercube_with_Pk(lhs, standard_k_axis, mapping, priors,
@@ -605,74 +688,26 @@ def fill_hypercube_with_Pk(lhs, standard_k_axis, mapping, priors,
     return samples, rescalers_arr
 
 
-def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
-                               write_period=None, save_label="sigmaR",
-                               crash_when_unsolvable=False):
-    """
-    @lhs: this is a list of tuples with which @eval_func is to be evaluated.
-
-    @cell_range: a range object specifying the indices of lhs which still need
-        to be evaluated. By default, it is None, which means that the entire
-        lhs will be evaluated. This parameter can be used to pick up from where
-        previous runs left off, and to run this method in saveable chunks.
-        
-    Parameters
-    ----------
-    
-    Returns
-    -------
-    """
-    if cell_range is None:
-        cell_range = range(len(lhs))
-
-    samples = np.zeros((len(lhs), len(R_axis)))
-
-    unwritten_cells = 0
-    for i in cell_range:
-        this_denormalized_row = denormalize_row(lhs[i], priors, mapping)
-        this_cosmology = build_cosmology(this_denormalized_row, mapping)
-
-        try:
-            samples[i] = ci.evaluate_sigmaR(this_cosmology, R_axis, [1.])[0]
-
-            if samples[i] is None and crash_when_unsolvable:
-                raise ValueError("Cell unsolvable.")
-        except camb.CAMBError:
-            print("This cell is unsolvable. Since this function requires " + \
-                  "no rescaling, your priors are probably extreme.")
-            if crash_when_unsolvable:
-                raise ValueError("Cell unsolvable.")
-
-        print(i, "complete")
-        unwritten_cells += 1
-        if write_period is not None and unwritten_cells >= write_period:
-            # We add one because the current cell is also unwritten
-            save_start = i - unwritten_cells + 1
-            save_end = i + 1
-
-            file_suffix = "_backup_i{}_through_{}_{}.npy"
-            file_suffix = file_suffix.format(save_start, i, save_label)
-
-            np.save("sigmaR" + file_suffix, samples[save_start:save_end])
-
-            unwritten_cells = 0
-
-    return samples
-
-
 def interpolate_nosigma12(input_cosmology, standard_k_axis):
     """
     Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-        to which it corresponds. The `input_cosmology` dictionary must specify a
-        redshift value, of course.
+    to which it corresponds. The `input_cosmology` dictionary must specify a
+    redshift value, of course.
 
     TO-DO: as of 03.04.2025, I don't remember what I was doing with this fn
-    (it's not called by any other part of at least this script). In case I
-    eventually have time to investigate, I will leave this remnant from the
-    previous iteration of this docstring:
+    (it's not called by any other part of at least this script). My suspicion is
+    that I meant to use this fn to offer a version of
+    `fill_hypercube_with_sigma12` using CAMB interpolators rather than the
+    direct-evaluation approach, since there are (negligible) differences in
+    the answers given by the two approaches.
+    
+    In case I eventually have time to investigate and check my hypothesis, I
+    will leave this remnant from the previous iteration of this docstring:
     "This is a demo function until we figure out how to apply the interpolation
     approach to the generation of emu data. Once we have that, we can figure
-    out how to re-combine this function with the previous one."
+    out how to re-combine this function with the previous one." Before I moved
+    this fn, "the previous one" referred to `interpolate_cell`, so perhaps my
+    hypothesis doesn't really make sense...
         
     Parameters
     ----------
