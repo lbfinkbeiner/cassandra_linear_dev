@@ -256,10 +256,8 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
     Parameters
     ----------
     input_cosmology: dict
-        Cosmology dictionary in the format used in the camb_interface script.
-        For example, see the `balance_neutrinos_with_CDM docstring`.
-        -> TO-DO: this docstring isn't a very centralized area for such an
-        essential piece of information.
+        Defines a particular cosmology. See the docstring for
+        `camb_interface.input_cosmology` for important details.
     standard_k_axis: list or one-dimensional np.ndarray
         The k values at which the power spectrum should be evaluated. I don't
         believe there's a way to feed these directly into CAMB; one has to use
@@ -388,19 +386,12 @@ def interpolate_cell(input_cosmology, standard_k_axis):
     TO-DO: this fn is similar to `direct_eval_cell` in many regards, and should
     be combined with it; a fn parameter should allow the user to choose between
     the two functionalities currently afforded by their separation.
-
-    Possible issues:
-    * Should we regenerate the MEMNeC interpolator at the end (i.e., with just
-        one redshift value rather than 150), to get better resolution? Or is it
-        fine to re-use?
                 
     Parameters
     ----------
     input_cosmology: dict
-        Cosmology dictionary in the format used in the camb_interface script.
-        For example, see the `balance_neutrinos_with_CDM docstring`.
-        -> TO-DO: this docstring isn't a very centralized area for such an
-        essential piece of information.
+        Defines a particular cosmology. See the docstring for
+        `camb_interface.input_cosmology` for important details.
     standard_k_axis: list or one-dimensional np.ndarray
         The k values at which the power spectrum should be evaluated. I don't
         believe there's a way to feed these directly into CAMB; one has to use
@@ -493,22 +484,34 @@ def interpolate_cell(input_cosmology, standard_k_axis):
 def interpolate_nosigma12(input_cosmology, standard_k_axis):
     """
     Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-        to which it corresponds.
+        to which it corresponds. The `input_cosmology` dictionary must specify a
+        redshift value, of course.
 
+    TO-DO: as of 03.04.2025, I don't remember what I was doing with this fn
+    (it's not called by any other part of at least this script)
     This is a demo function until we figure out how to apply the interpolation
     approach to the generation of emu data. Once we have that, we can figure
     out how to re-combine this function with the previous one.
-
-    Possible issues:
-    * Should we regenerate the MEMNeC interpolator at the end (i.e., with just
-        one redshift value rather than 150), to get better resolution? Or is it
-        fine to re-use?
         
     Parameters
     ----------
+    input_cosmology: dict
+        Defines a particular cosmology. See the docstring for
+        `camb_interface.input_cosmology`
+        for important details.
     
     Returns
     -------
+    tuple:
+        the first return is an np.ndarray representing the power spectrum
+        evaluated at each point given in `standard_k_axis`
+        
+        the second return is an np.ndarray where the first index corresponds to
+        the sigma12 value when evaluating `input_cosmology` (which should
+        contain a prescribed redshift value) and the remaining indices are
+        filled in with np.nan. The purpose of this arrangement is to conform
+        the output of this fn to conventional formats used by other fns in this
+        script.
     """
     # This allows us to roughly find the z corresponding to the sigma12 that we
     # want.

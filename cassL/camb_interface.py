@@ -157,16 +157,8 @@ def balance_neutrinos_with_CDM(cosmology, new_omnuh2):
     Parameters
     ----------
     cosmology: dict
-        A dictionary of settings for cosmological parameters. The precise
-        format is specified in the file "standards.txt". In particular, keep in
-        mind that the cosmology will be assumed to completely lack massive
-        neutrinos in the event that both of the keys 'mnu' and 'omnuh2' are
-        missing.
-        -> TO-DO: this docstring isn't a very centralized area for such an
-        essential piece of information. We should put the information somewhere
-        else and have each fn dealing with cosomology dictionaries refer to the
-        centralized location.
-
+        Defines a particular cosmology. See the docstring for `input_cosmology`
+        for important details.
 
     new_omnuh2: float
         The new desired value for the physical density in neutrinos. The
@@ -559,6 +551,15 @@ def input_cosmology(cosmology):
     Helper function for kzps.
     Read entries from a dictionary representing a cosmological configuration.
     Then write these values to a CAMBparams object and return.
+    
+    Parameters
+    ----------
+    cosmology: dict
+        Defines a cosmology through values for cosmological parameters. The
+        precise format is specified in the file "standards.txt". The convention
+        of this repository is that cosmologies will be assumed to completely
+        lack massive neutrinos in the event that both of the keys 'mnu' and
+        'omnuh2' are missing.
     """
     # If the cosmology is underspecified, serve the user a clear complaint
     verify_cosmology(cosmology)    
