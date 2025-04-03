@@ -259,9 +259,9 @@ def direct_eval_cell(input_cosmology, standard_k_axis):
         Defines a particular cosmology. See the docstring for
         `camb_interface.input_cosmology` for important details.
     standard_k_axis: list or one-dimensional np.ndarray
-        The k values at which the power spectrum should be evaluated. I don't
-        believe there's a way to feed these directly into CAMB; one has to use
-        interpolation.
+        The k values at which the power spectrum for `input_cosmology` should be
+        evaluated. I don't believe there's a way to feed these directly into
+        CAMB; one has to use interpolation.
     
     Returns
     -------
@@ -479,58 +479,6 @@ def interpolate_cell(input_cosmology, standard_k_axis):
     # runs will have the same k axis.
 
     return p, np.array((actual_sigma12, input_cosmology['h'], float(z_best)))
-    
-
-def interpolate_nosigma12(input_cosmology, standard_k_axis):
-    """
-    Returns the power spectrum in Mpc units and the actual sigma12_tilde value
-        to which it corresponds. The `input_cosmology` dictionary must specify a
-        redshift value, of course.
-
-    TO-DO: as of 03.04.2025, I don't remember what I was doing with this fn
-    (it's not called by any other part of at least this script)
-    This is a demo function until we figure out how to apply the interpolation
-    approach to the generation of emu data. Once we have that, we can figure
-    out how to re-combine this function with the previous one.
-        
-    Parameters
-    ----------
-    input_cosmology: dict
-        Defines a particular cosmology. See the docstring for
-        `camb_interface.input_cosmology`
-        for important details.
-    
-    Returns
-    -------
-    tuple:
-        the first return is an np.ndarray representing the power spectrum
-        evaluated at each point given in `standard_k_axis`
-        
-        the second return is an np.ndarray where the first index corresponds to
-        the sigma12 value when evaluating `input_cosmology` (which should
-        contain a prescribed redshift value) and the remaining indices are
-        filled in with np.nan. The purpose of this arrangement is to conform
-        the output of this fn to conventional formats used by other fns in this
-        script.
-    """
-    # This allows us to roughly find the z corresponding to the sigma12 that we
-    # want.
-    #! Hard code
-    k_max = 1.01 * np.max(standard_k_axis)
-    z = input_cosmology["z"]
-
-    get_intrp = ci.cosmology_to_Pk_interpolator
-    
-    interpolation_redshifts = np.flip(np.linspace(max(0, z - 1), z + 1, 150))
-    p_intrp = get_intrp(input_cosmology, redshifts=interpolation_redshifts,
-                        kmax=k_max, hubble_units=False)
-    p = p_intrp.P(z, standard_k_axis)
-
-    actual_sigma12 = ci.sigma12_from_interpolator(p_intrp, z)
-
-    # We don't need to return k because we take for granted that all
-    # runs will have the same k axis.
-    return p, np.array([actual_sigma12, np.nan, np.nan])
 
 
 def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
@@ -710,3 +658,59 @@ def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
             unwritten_cells = 0
 
     return samples
+
+
+def interpolate_nosigma12(input_cosmology, standard_k_axis):
+    """
+    Returns the power spectrum in Mpc units and the actual sigma12_tilde value
+        to which it corresponds. The `input_cosmology` dictionary must specify a
+        redshift value, of course.
+
+    TO-DO: as of 03.04.2025, I don't remember what I was doing with this fn
+    (it's not called by any other part of at least this script). In case I
+    eventually have time to investigate, I will leave this remnant from the
+    previous iteration of this docstring:
+    "This is a demo function until we figure out how to apply the interpolation
+    approach to the generation of emu data. Once we have that, we can figure
+    out how to re-combine this function with the previous one."
+        
+    Parameters
+    ----------
+    input_cosmology: dict
+        Defines a particular cosmology. See the docstring for
+        `camb_interface.input_cosmology` for important details.
+    standard_k_axis: list or one-dimensional np.ndarray
+        The k values at which the power spectrum for `input_cosmology` should be
+        evaluated.
+    
+    Returns
+    -------
+    tuple:
+        the first return is an np.ndarray representing the power spectrum
+        evaluated at each point given in `standard_k_axis`
+        
+        the second return is an np.ndarray where the first index corresponds to
+        the sigma12 value when evaluating `input_cosmology` (which should
+        contain a prescribed redshift value) and the remaining indices are
+        filled in with np.nan. The purpose of this arrangement is to conform
+        the output of this fn to conventional formats used by other fns in this
+        script.
+    """
+    # This allows us to roughly find the z corresponding to the sigma12 that we
+    # want.
+    #! Hard code
+    k_max = 1.01 * np.max(standard_k_axis)
+    z = input_cosmology["z"]
+
+    get_intrp = ci.cosmology_to_Pk_interpolator
+    
+    interpolation_redshifts = np.flip(np.linspace(max(0, z - 1), z + 1, 150))
+    p_intrp = get_intrp(input_cosmology, redshifts=interpolation_redshifts,
+                        kmax=k_max, hubble_units=False)
+    p = p_intrp.P(z, standard_k_axis)
+
+    actual_sigma12 = ci.sigma12_from_interpolator(p_intrp, z)
+
+    # We don't need to return k because we take for granted that all
+    # runs will have the same k axis.
+    return p, np.array([actual_sigma12, np.nan, np.nan])
