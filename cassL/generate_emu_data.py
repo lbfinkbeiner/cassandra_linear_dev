@@ -114,23 +114,25 @@ def denormalize_row(lhs_row, priors, mapping):
 
 def generate_header(priors, mapping, save_label):
     """
-    Essential function for fill_hypercube series of functions. Writes a header
-    to a file specified by save_label. The header is intended to include all
-    information necessary for the reproduction of the data set.
+    Writes a header to a file specified by save_label. The header is intended to
+    include all information necessary for the reproduction of the data set.
     
-    The header explains the priors used, and explains which columns map to which
+    The header shall explain the priors used and which columns map to which
     cosmological parameters. This essentially provides self-documenting data
     sets.
     
-    -> TO-DO: this fn hasn't been tested yet.
+    However: although this fn is planned to be incorporated in an essential way
+    into the `fill_hypercube*` series of functions, it hasn't been tested or
+    fully implemented yet. (TO-DO)
     
     Parameters
     ----------
-    priors: two-dimensional np.ndarray
-        set of prior bounds, see ui.prior_file_to_array
-    mapping: list.
-        See the fn labels_to_mapping for more details concerning this object.
-    save_label: file name associated with the set of power spectra to be 
+    priors: np.ndarray (two-dimensional)
+        Set of prior bounds, see `ui.prior_file_to_array`.
+    mapping: list (one-dimensional)
+        See the fn `labels_to_mapping` for more details concerning this object.
+    save_label: str
+        File name associated with the set of power spectra to be 
         generated, for example using fill_hypercube_with_Pk.    
         
     Returns
@@ -174,11 +176,11 @@ def build_cosmology(lhs_row, mapping):
     
     Parameters
     ----------
-    lhs_row: list
+    lhs_row: list (one-dimensional)
         A list of unitless values between 0 and 1 taken from a Latin hypercube
         of input values for a data set of power spectra.
-    mapping: list.
-        See the fn labels_to_mapping for more details concerning this object.    
+    mapping: list (one-dimensional)
+        See the fn `labels_to_mapping` for more details concerning this object.    
     
     Returns
     -------
@@ -494,34 +496,59 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         
     Parameters
     ----------
-    lhs: two-dimensional np.ndarray of uniform shape
+    lhs: np.ndarray (of uniform two-dimensional shape)
         Normalized values corresponding to cosmological parameters used to
         define cosmologies to be evaluated. The width of this matrix corresponds
         to the number of cosmological parameters used to define each cosmology.
         The height of this matrix corresponds to the number of different
         cosmologies defined.
-    mapping:
-        used to qualify `lhs`
-    priors: ditto
-        used to qualify `lhs`
-    samples:
-    write_period:
-    cell_range:
-        TO-DO: explain what this controls
+    mapping: list (one-dimensional)
+        Used to build cosmologies from `lhs`. See the fn `labels_to_mapping` for
+        more details concerning `mapping` objects.
+    priors: np.ndarray (two-dimensional)
+        Collection of bounds on cosmological priors. Used to build cosmologies
+        from `lhs`. For more details, see `ui.prior_file_to_array`.
+    save_label: str
+        Prefix used to name files written to disk by this fn as part of saving
+        its progress through the batch of cosmologies defined by `lhs`,
+        `mapping`, and `priors`. In other words, this is the "name" of the run
+        as a whole. 
     
-        This parameter makes sense for fill_hypercube_with_Pk, which is a much
-        more computationally intensive fn. It is of comparatively little use
-        here, since a complete batch of results can be generated in but few
-        minutes.
-    save_label:
-    crash_when_unsolvable:
-    
+        TO-DO: according to the NumPy docstring example, this parameter should
+        go in the section "Other Parameters" since it comes after at least one
+        parameter (in this case, for example, `samples`) explained in the
+        section "Other Parameters". I'm explaining it here since it's an
+        important parameter, but I should fix the order and then correct any
+        references to this fn.
+        
     Returns
     -------
-    samples: one-dimensional np.ndarray
+    samples: np.ndarray (one-dimensional)
         Contains the calculated sigma12 values for each cosmology jointly
         specified by `lhs`, `mapping`, and `priors`. The length of `samples`
         therefore corresponds to the height of `lhs`.
+        
+    Other Parameters
+    ----------------
+    samples: np.ndarray, optional
+        TO-DO: explain what this controls
+        Collection of already-computed results. Useful
+        When specifying this parameter, `cell_range` should also be set.
+        The default value is None, which indicates to this fn that the hypercube
+        should be generated from scratch.
+        
+        NB: This parameter makes sense for fill_hypercube_with_Pk, which is a
+        much more computationally intensive fn. It is of comparatively little
+        use here, since a complete batch of results can be generated in but few
+        minutes.
+    write_period: int, optional
+        TO-DO: explain what this controls
+    cell_range:
+        TO-DO: explain what this controls
+    
+        See the NB 
+    crash_when_unsolvable:
+        TO-DO: explain what this controls
     """    
     def eval_func(cosmology):
         # De-nesting
