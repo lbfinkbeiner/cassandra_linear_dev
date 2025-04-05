@@ -508,11 +508,16 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
     priors: np.ndarray (two-dimensional)
         Collection of bounds on cosmological priors. Used to build cosmologies
         from `lhs`. For more details, see `ui.prior_file_to_array`.
-    save_label: str
+    save_label: str, optional
         Prefix used to name files written to disk by this fn as part of saving
         its progress through the batch of cosmologies defined by `lhs`,
         `mapping`, and `priors`. In other words, this is the "name" of the run
-        as a whole. 
+        as a whole.
+        
+        The default value is "sigma12", intended to be a generic prefix. Of
+        course, if the user repeatedly runs the function with different inputs
+        but without changing `save_label` or moving the generated files,
+        previous runs will be overwritten.
     
         TO-DO: according to the NumPy docstring example, this parameter should
         go in the section "Other Parameters" since it comes after at least one
@@ -531,22 +536,48 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
     Other Parameters
     ----------------
     samples: np.ndarray, optional
-        TO-DO: explain what this controls
-        Collection of already-computed results. Useful
-        When specifying this parameter, `cell_range` should also be set.
+        Collection of already-computed results. If the user has previously
+        used this fn with a particular group of inputs, but the fn terminated
+        prematurely (e.g. because the user needed to free up resources or due to
+        a system crash), the fn can resume from the most recent backup of the
+        power spectra, which becomes `samples`. The fn parameter `cell_range`
+        must also be set in this case.
+        
         The default value is None, which indicates to this fn that the hypercube
         should be generated from scratch.
+        
+        In order to get backups of the power spectra in the first place,
+        configure the `write_period` parameter. Alternatively or in addition,
+        the user may limit in advance how many of the power spectra are to be
+        computed, using the `cell_range` parameter.
         
         NB: This parameter makes sense for fill_hypercube_with_Pk, which is a
         much more computationally intensive fn. It is of comparatively little
         use here, since a complete batch of results can be generated in but few
         minutes.
     write_period: int, optional
-        TO-DO: explain what this controls
+        After every `write_period` power_spectra are calculated, this fn writes
+        a backup file to disk using the `save_label` parameter. The backup file
+        contains all power spectra available to the fn at the time of saving;
+        for example, the backup will include any starting power spectra fed to
+        the fn with `samples`.
+        
+        The file name also indicates the last index of `lhs` for which a power 
+        spectrum has been calculated. Be careful when interpreting this index:
+        if the user has specified a `cell_range` that does not begin with 0, the 
+        index in the name of the save file does not necessarily indicate that
+        all entries up through the index have valid power spectra.
+        
+        The default value of `write_period` is None, which causes the fn to not
+        save any backup files.
+        
+        See also the NB in the explanation for the `samples` parameter.
     cell_range:
         TO-DO: explain what this controls
     
-        See the NB 
+        The default value is
+    
+        See also the NB in the explanation for the `samples` parameter. 
     crash_when_unsolvable:
         TO-DO: explain what this controls
     """    
