@@ -572,12 +572,29 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         save any backup files.
         
         See also the NB in the explanation for the `samples` parameter.
-    cell_range:
-        TO-DO: explain what this controls
+    cell_range: range, optional
+        Specifies for which indices of `lhs` a corresponding power spectrum
+        should be calculated, and is typically set alongside `samples`, another
+        parameter of this fn.
+        
+        The advantage of setting this parameter rather
+        than inputting a pre-sliced version of lhs is that the format of the
+        final result is the same as if `cell_range` is None. For example, if
+        `lhs` has ten rows and `cell_range` = range(4, 6), the array `sample`
+        returned by this fn will still have ten rows, with all rows outside
+        indices 4 and 5 left as zeros. Maintaining a fixed format in this way
+        makes it much easier to combine results from multiple runs of this fn.
     
-        The default value is
+        The default value is None, which indicates that power spectra for all
+        rows of `lhs` will be calculated.
     
-        See also the NB in the explanation for the `samples` parameter. 
+        See also the NB in the explanation for the `samples` parameter.
+
+        TO-DO: a more versatile, and therefore more useful, type for this
+        parameter would be list/np.ndarray, so that noncontiguous index
+        selections may be made by the user. Alternatively, with a bit more code,
+        we could handle both inputs provided by the user (thus ensuring
+        backwards compatibility).
     crash_when_unsolvable:
         TO-DO: explain what this controls
     """    
