@@ -1,3 +1,12 @@
+"""
+This module is abbreviated in comments and import statements as ci.
+
+It provides several convenience fn.s for obtaining power spectra using CAMB via
+the official Python wrapper.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

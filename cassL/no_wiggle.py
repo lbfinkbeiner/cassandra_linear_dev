@@ -1,3 +1,15 @@
+"""
+This module is used to create the data files necessary for training an Emulator
+object that is intended to estimate no-wiggle power spectra.
+
+Conceptually, this module is a companion to the more complicated
+`generate_emu_data` ("ged") module. Once the data files have been validly
+prepared, the `train_emu` ("te") module may be applied to them just as it would
+to wiggly power spectra files.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
+"""
+
 from scipy.interpolate import UnivariateSpline
 import scipy.fft as fft
 import numpy as np

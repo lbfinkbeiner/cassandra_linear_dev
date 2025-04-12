@@ -1,6 +1,7 @@
 """
-Module for generating and dealing with
-latin hypercubes.
+Module for generating and dealing with Latin hypercubes.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
 """
 
 import numpy as np

@@ -1,3 +1,15 @@
+"""
+This module is abbreviated in comments and import statements as te.
+
+It provides an organized framework within which the user can turn files output
+by the fn.s of the generate_emu_data ("ged") module into Emulator objects
+capable of predicting the power spectra for given cosmologies. Specifically,
+the user creates an Emulator_Trainer object and uses it to train the Emulator
+object, which is a field of the Emulator_Trainer object.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl

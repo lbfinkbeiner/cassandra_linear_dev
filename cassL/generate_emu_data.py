@@ -1,8 +1,8 @@
 """
-This script is abbreviated in comments and the important statement as ged.
+This module is abbreviated in comments and import statements as ged.
 
 It provides an organized framework within which the user can make repeated calls
-to the camb_interface script. The repeated calls are used to build up
+to the camb_interface ("ci") script. The repeated calls are used to build up
 collections of CAMB output spectra to use as training data sets for the
 emulator.
 

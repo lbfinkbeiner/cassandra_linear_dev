@@ -1,3 +1,12 @@
+"""
+This module is abbreviated in comments and import statements as ui.
+
+It provides several convenience fn.s for interacting with other scripts in this
+repository.
+
+Docstrings use the NumPy format: https://numpydoc.readthedocs.io/en/latest/format.html
+"""
+
 import numpy as np
 from cassL import lhc
 from cassL import generate_emu_data as ged
