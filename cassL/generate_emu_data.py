@@ -595,8 +595,19 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         selections may be made by the user. Alternatively, with a bit more code,
         we could handle both inputs provided by the user (thus ensuring
         backwards compatibility).
-    crash_when_unsolvable:
-        TO-DO: explain what this controls
+    crash_when_unsolvable: bool, optional
+        In the default case (=False), whenever the fn encounters a cosmology
+        for which no sigma12 value can be obtained, it simply moves on to the
+        next cosmology.
+        
+        Specifically, we detect no sigma12 can be obtained when CAMB raises an
+        error that this fn is designed to catch.
+        
+        If this parameter is set to True, the fn will instead crash as soon as
+        it hits such a case. This may be desirable if it is imperative that the
+        full set of input cosmologies receives corresponding sigma12 values. In
+        most cases, though, the user will want to leave this parameter False and
+        simply discard any output cells equal to zero.
     """    
     def eval_func(cosmology):
         # De-nesting
@@ -635,8 +646,9 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
     return samples
     
     
-def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
-                               write_period=None, save_label="sigmaR",
+def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, samples=None,
+                               write_period=None, cell_range=None,
+                               save_label="sigmaR",
                                crash_when_unsolvable=False):
     """
     @lhs: this is a list of tuples with which @eval_func is to be evaluated.
@@ -654,8 +666,8 @@ def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, cell_range=None,
     """
     if cell_range is None:
         cell_range = range(len(lhs))
-
-    samples = np.zeros((len(lhs), len(R_axis)))
+    if samples is None:
+        samples = np.zeros((len(lhs), len(R_axis)))
 
     unwritten_cells = 0
     for i in cell_range:
