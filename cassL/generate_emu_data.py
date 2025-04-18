@@ -514,8 +514,8 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         `mapping`, and `priors`. In other words, this is the "name" of the run
         as a whole.
         
-        The default value is "sigma12", intended to be a generic prefix. Of
-        course, if the user repeatedly runs the function with different inputs
+        The default value is "sigma12", intended to be a generic prefix. If
+        the user repeatedly runs the function with different inputs
         but without changing `save_label` or moving the generated files,
         previous runs will be overwritten.
     
@@ -540,15 +540,15 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         used this fn with a particular group of inputs, but the fn terminated
         prematurely (e.g. because the user needed to free up resources or due to
         a system crash), the fn can resume from the most recent backup of the
-        power spectra, which becomes `samples`. The fn parameter `cell_range`
+        sigma12 values, which becomes `samples`. The fn parameter `cell_range`
         must also be set in this case.
         
-        The default value is None, which indicates to this fn that the hypercube
+        The default value is None, which indicates that the hypercube
         should be generated from scratch.
         
-        In order to get backups of the power spectra in the first place,
+        In order to get backups of the sigma12 values in the first place,
         configure the `write_period` parameter. Alternatively or in addition,
-        the user may limit in advance how many of the power spectra are to be
+        the user may limit in advance how many of the sigma12 values are to be
         computed, using the `cell_range` parameter.
         
         NB: This parameter makes sense for fill_hypercube_with_Pk, which is a
@@ -556,37 +556,37 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         use here, since a complete batch of results can be generated in but few
         minutes.
     write_period: int, optional
-        After every `write_period` power_spectra are calculated, this fn writes
+        After every `write_period` sigma12 values are calculated, this fn writes
         a backup file to disk using the `save_label` parameter. The backup file
-        contains all power spectra available to the fn at the time of saving;
-        for example, the backup will include any starting power spectra fed to
-        the fn with `samples`.
+        contains all sigma12 values available to the fn at the time of saving;
+        for example, the backup will include any starting sigma12 values fed to
+        the fn via the parameter `samples`.
         
-        The file name also indicates the last index of `lhs` for which a power 
-        spectrum has been calculated. Be careful when interpreting this index:
+        The file name also indicates the last index of `lhs` for which a sigma12
+        value has been calculated. Be careful when interpreting this index:
         if the user has specified a `cell_range` that does not begin with 0, the 
         index in the name of the save file does not necessarily indicate that
-        all entries up through the index have valid power spectra.
+        all entries up through the index have valid sigma12 values.
         
         The default value of `write_period` is None, which causes the fn to not
         save any backup files.
         
         See also the NB in the explanation for the `samples` parameter.
     cell_range: range, optional
-        Specifies for which indices of `lhs` a corresponding power spectrum
+        Specifies for which indices of `lhs` a corresponding sigma12 value
         should be calculated, and is typically set alongside `samples`, another
         parameter of this fn.
         
         The advantage of setting this parameter rather
         than inputting a pre-sliced version of lhs is that the format of the
         final result is the same as if `cell_range` is None. For example, if
-        `lhs` has ten rows and `cell_range` = range(4, 6), the array `sample`
+        `lhs` has ten rows and `cell_range` = range(4, 6), the array `samples`
         returned by this fn will still have ten rows, with all rows outside
         indices 4 and 5 left as zeros. Maintaining a fixed format in this way
         makes it much easier to combine results from multiple runs of this fn.
     
-        The default value is None, which indicates that power spectra for all
-        rows of `lhs` will be calculated.
+        The default value is None, which indicates that sigma12 values will be 
+        calculated for all rows of `lhs`.
     
         See also the NB in the explanation for the `samples` parameter.
 
@@ -600,8 +600,8 @@ def fill_hypercube_with_sigma12(lhs, mapping, priors, samples=None,
         for which no sigma12 value can be obtained, it simply moves on to the
         next cosmology.
         
-        Specifically, we detect no sigma12 can be obtained when CAMB raises an
-        error that this fn is designed to catch.
+        Specifically, we detect no sigma12 value can be obtained when CAMB
+        raises an error that this fn is designed to catch.
         
         If this parameter is set to True, the fn will instead crash as soon as
         it hits such a case. This may be desirable if it is imperative that the
@@ -651,18 +651,130 @@ def fill_hypercube_with_sigmaR(lhs, R_axis, mapping, priors, samples=None,
                                save_label="sigmaR",
                                crash_when_unsolvable=False):
     """
-    @lhs: this is a list of tuples with which @eval_func is to be evaluated.
-
-    @cell_range: a range object specifying the indices of lhs which still need
-        to be evaluated. By default, it is None, which means that the entire
-        lhs will be evaluated. This parameter can be used to pick up from where
-        previous runs left off, and to run this method in saveable chunks.
+    Given a Latin hypercube of cosmologies, return an array of sigmaR arrays.
+    
+    This fn is used to build the sigmaR emulator.
         
     Parameters
     ----------
+    lhs: np.ndarray (of uniform two-dimensional shape)
+        Normalized values corresponding to cosmological parameters used to
+        define cosmologies to be evaluated. The width of this matrix corresponds
+        to the number of cosmological parameters used to define each cosmology.
+        The height of this matrix corresponds to the number of different
+        cosmologies defined.
+    R_axis: list or np.ndarray (one-dimensional)
+        Collection of sphere radii R within which to consider linear-theory
+        RMS mass fluctuation. Each cosmology, that is, each row in `lhs`, will
+        result in a different array of sigmaR values, where each index
+        corresponds to the same index in `R_axis`.
+    mapping: list (one-dimensional)
+        Used to build cosmologies from `lhs`. See the fn `labels_to_mapping` for
+        more details concerning `mapping` objects.
+    priors: np.ndarray (two-dimensional)
+        Collection of bounds on cosmological priors. Used to build cosmologies
+        from `lhs`. For more details, see `ui.prior_file_to_array`.
+    save_label: str, optional
+        Prefix used to name files written to disk by this fn as part of saving
+        its progress through the batch of cosmologies defined by `lhs`,
+        `mapping`, and `priors`. In other words, this is the "name" of the run
+        as a whole.
+        
+        The default value is "sigmaR", intended to be a generic prefix. If
+        the user repeatedly runs the function with different inputs
+        but without changing `save_label` or moving the generated files,
+        previous runs will be overwritten.
     
+        TO-DO: according to the NumPy docstring example, this parameter should
+        go in the section "Other Parameters" since it comes after at least one
+        parameter (in this case, for example, `samples`) explained in the
+        section "Other Parameters". I'm explaining it here since it's an
+        important parameter, but I should fix the order and then correct any
+        references to this fn.
+        
     Returns
     -------
+    samples: np.ndarray (two-dimensional)
+        Contains the calculated sigmaR values for each cosmology jointly
+        specified by `lhs`, `mapping`, and `priors`. The height of `samples`
+        therefore corresponds to the height of `lhs` and the width of `samples`
+        corresponds to the length of `R_axis`.
+        
+    Other Parameters
+    ----------------
+    samples: np.ndarray, optional
+        Collection of already-computed results. If the user has previously
+        used this fn with a particular group of inputs, but the fn terminated
+        prematurely (e.g. because the user needed to free up resources or due to
+        a system crash), the fn can resume from the most recent backup of the
+        sigmaR values, which becomes `samples`. The fn parameter `cell_range`
+        must also be set in this case.
+        
+        The default value is None, which indicates that the hypercube
+        should be generated from scratch.
+        
+        In order to get backups of the sigmaR values in the first place,
+        configure the `write_period` parameter. Alternatively or in addition,
+        the user may limit in advance how many of the sigmaR values are to be
+        computed, using the `cell_range` parameter.
+        
+        NB: This parameter makes sense for fill_hypercube_with_Pk, which is a
+        much more computationally intensive fn. It is of comparatively little
+        use here, since a complete batch of results can be generated in but few
+        minutes.
+    write_period: int, optional
+        After every `write_period` sigmaR arrays are calculated, this fn writes
+        a backup file to disk using the `save_label` parameter. The backup file
+        contains all sigmaR arrays available to the fn at the time of saving;
+        for example, the backup will include any starting sigmaR arrays fed to
+        the fn via the parameter `samples`.
+        
+        The file name also indicates the last index of `lhs` for which a sigmaR
+        array has been calculated. Be careful when interpreting this index:
+        if the user has specified a `cell_range` that does not begin with 0, the 
+        index in the name of the save file does not necessarily indicate that
+        all entries up through the index have valid sigmaR arrays.
+        
+        The default value of `write_period` is None, which causes the fn to not
+        save any backup files.
+        
+        See also the NB in the explanation for the `samples` parameter.
+    cell_range: range, optional
+        Specifies for which indices of `lhs` a corresponding sigmaR array
+        should be calculated, and is typically set alongside `samples`, another
+        parameter of this fn.
+        
+        The advantage of setting this parameter rather than inputting a
+        pre-sliced version of lhs is that the format of the final result is the
+        same as if `cell_range` is None. For example, if `lhs` has ten rows and
+        `cell_range` = range(4, 6), the matrix `samples` returned by this fn
+        will still have ten rows, with all rows outside indices 4 and 5 left as 
+        arrays of zeros. Maintaining a fixed format in this way makes it much
+        easier to combine results from multiple runs of this fn.
+    
+        The default value is None, which indicates that sigmaR arrays will be
+        calculated for all rows of `lhs`.
+    
+        See also the NB in the explanation for the `samples` parameter.
+
+        TO-DO: a more versatile, and therefore more useful, type for this
+        parameter would be list/np.ndarray, so that noncontiguous index
+        selections may be made by the user. Alternatively, with a bit more code,
+        we could handle both inputs provided by the user (thus ensuring
+        backwards compatibility).
+    crash_when_unsolvable: bool, optional
+        In the default case (=False), whenever the fn encounters a cosmology
+        for which no sigmaR array can be obtained, it simply moves on to the
+        next cosmology.
+        
+        Specifically, we detect no sigmaR array can be obtained when CAMB raises
+        an error that this fn is designed to catch.
+        
+        If this parameter is set to True, the fn will instead crash as soon as
+        it hits such a case. This may be desirable if it is imperative that the
+        full set of input cosmologies receives corresponding sigmaR arrays. In
+        most cases, though, the user will want to leave this parameter False and
+        simply discard any arrays of zeros in the output matrix.
     """
     if cell_range is None:
         cell_range = range(len(lhs))
